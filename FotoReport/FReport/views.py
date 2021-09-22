@@ -25,7 +25,7 @@ def foto_add(request):
 
 
 def admins(request):
-    print("admins======")
+    print("selected file: " + request.POST["name"])
     form = Add_report(request.POST)
     return render(request, 'FReport/admins.html', {'form': form})
 

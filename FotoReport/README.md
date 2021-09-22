@@ -26,3 +26,6 @@ Ctrl + Alt + S - Открыть настройки
 
 
 
+
+File-upload
+https://docs.djangoproject.com/en/3.2/topics/http/file-uploads/
