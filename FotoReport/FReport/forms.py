@@ -19,8 +19,10 @@ class Scr_res_Form(forms.ModelForm):
         model = Scr_res
         fields = ['scr_res_1', 'scr_res_2', 'id']
 
+
 class Add_report(forms.Form):
      name = forms.FileField(label='Выберете файл с фотоотчетом', required=False)
+
  #    name2 = forms.CharField(max_length=100, label='Название ролика')
 #    created_at = forms.DateTimeField(label='Дата добавления ролика')
 #    updated_at = forms.DateTimeField(label='Дата изменения записи')
