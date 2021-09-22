@@ -1,0 +1,12 @@
+<form action="admins" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button onclick="document.location='foto_add'">Загрузить фотоотчет</button>
+
+    <button onclick="document.location='admins_add'">Добавить ролики в базу</button>
+
+</form>
+
+
+
+
