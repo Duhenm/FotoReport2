@@ -42,7 +42,7 @@ class PhotoRep(models.Model):
 
 
 class Scr(models.Model):
-    name = models.CharField(max_length=50, verbose_name='Название')
+    name = models.CharField(max_length=70, verbose_name='Название')
     nameb = models.IntegerField(verbose_name='Номер экрана')
     Dir = models.CharField(max_length=50, default='atv', verbose_name='Ресурс')
     ip_add = models.GenericIPAddressField(protocol='both', verbose_name='IP_адрес', default='10.10.0.1')

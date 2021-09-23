@@ -1,12 +1,17 @@
-<form action="admins" method="post" enctype="multipart/form-data">
+
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button onclick="document.location='foto_add'">Загрузить фотоотчет</button>
-
+    <input type="file" name="myfile">
     <button onclick="document.location='admins_add'">Добавить ролики в базу</button>
+    <button onclick="document.location='simple_upload'">Загрузить фотоотчет</button>
+    <button onclick="document.location='foto_add'">foto_add</button>
+  </form>
 
-    <button type="submit">Загрузить фотоотчет</button>
-</form>
+  {% if uploaded_file_url %}
+    <p>File uploaded at: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p>
+  {% endif %}
+
+
 
 
 

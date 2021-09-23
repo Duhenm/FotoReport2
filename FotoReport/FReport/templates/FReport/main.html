@@ -14,3 +14,13 @@
 
 </body>
 </html>
+
+<form action="admins" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button onclick="document.location='foto_add'">Загрузить фотоотчет</button>
+
+    <button onclick="document.location='admins_add'">Добавить ролики в базу</button>
+
+    <button type="submit">Загрузить фотоотчет</button>
+</form>

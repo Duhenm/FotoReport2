@@ -1,5 +1,6 @@
 from django import forms
 from .models import *
+#from uploads.core.models import Document
 
 
 #class FO_ADD(forms.Form):
@@ -20,8 +21,10 @@ class Scr_res_Form(forms.ModelForm):
         fields = ['scr_res_1', 'scr_res_2', 'id']
 
 
+
+
 class Add_report(forms.Form):
-     name = forms.FileField(label='Выберете файл с фотоотчетом', required=False)
+     name2 = forms.FileField(label='Выберете файл с фотоотчетом', required=False)
 
  #    name2 = forms.CharField(max_length=100, label='Название ролика')
 #    created_at = forms.DateTimeField(label='Дата добавления ролика')
