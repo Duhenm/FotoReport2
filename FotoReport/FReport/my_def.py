@@ -1,6 +1,7 @@
-
 import os, cv2, xlrd, datetime
 import shutil
+
+from typing import List
 
 from .models import *
 
@@ -185,3 +186,77 @@ def def_add_photo():
             print('Найдены ошибки', dict_error)  ##нужен вывод в таблицу на страницу
         else:
             push_entry(dict_video)
+
+
+# Вызов классов
+def def_add_photo2():
+    parser = ExcelFileParser('c:/ЗАЯВКА.xls')
+    screen_clips_list = parser.parse()
+
+    repository = PhotoReportRepository()
+    repository.add_clips_to_report(screen_clips_list)
+
+
+# DTO, хранит данные. Используется для передачи данных внутри программы
+class ScreenClips:
+    def __init__(self, screen_name: str, clip_list: List[str]):
+        self.screen_name = screen_name
+        self.clips = clip_list
+
+
+# Парсер. Его дело - извлечь данные из Excel
+class ExcelFileParser:
+    def __init__(self, path_to_excel_file: str):
+        self._path_to_excel_file = path_to_excel_file
+
+    def parse(self) -> List[ScreenClips]:
+        exel = xlrd.open_workbook(self._path_to_excel_file, formatting_info=True)
+        sheet = exel.sheet_by_index(0)
+
+        screen_clips = List[ScreenClips]()
+        for i in range(4, 28):
+            screen_name = str(sheet.row_values(i)[1])
+            joined_clips_string = str(sheet.row_values(i)[2])
+            clips = normalize_text_creating_list(joined_clips_string)
+            screen_clips.append(ScreenClips(screen_name, clips))
+
+        return screen_clips
+
+
+# Репозиторий. Он знает, как общатья с базой.
+class PhotoReportRepository:
+    def add_clips_to_report(self, screen_clips_list: List[ScreenClips]):
+        wrong_screen_names = [item.screen_name for item in screen_clips_list if not self.is_screen_exist(item.screen_name)]
+        if wrong_screen_names:
+            print('Экраны не найдены в БД', wrong_screen_names)  ## нужен вывод в таблицу на страницу
+            # FIXME: raise exception вместо print/return, после этого вынести в отдельный метод validate
+            return
+
+        # TODO: аналогично проверить названия видео
+        # TODO: аналогично проверить разрешение
+
+        for screen_clips in screen_clips_list:
+            self._save_clips_report(screen_clips)
+
+    @staticmethod
+    def is_screen_exist(screen_name: str) -> bool:
+        screen = Scr.objects.filter(name=screen_name)
+        if screen:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def _save_clips_report(screen_clips: ScreenClips):
+        for clip in screen_clips.clips:
+            screen_entity = Scr.objects.filter(name=screen_clips.screen_name)
+            clip_entity = Clips.objects.filter(name=clip)
+            date = find_next_thursday()
+            # FIXME: проверить на пустоту
+            photorep_entry = PhotoRep.objects.filter(Scr_id=screen_entity[0],
+                                                     Clips_id=clip_entity[0],
+                                                     data_report=date)
+            if (len(photorep_entry)) == 0:
+                new_entry = PhotoRep(Scr_id=screen_entity[0], Clips_id=clip_entity[0], data_report=date)
+                new_entry.save()
+        return True
