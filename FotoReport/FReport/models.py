@@ -30,6 +30,7 @@ class Clips(models.Model):
 
 class PhotoRep(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
+    data_report = models.DateField(verbose_name='Дата фотоотчета')
     Scr_id = models.ForeignKey('Scr', on_delete=models.PROTECT)
     Clips_id = models.ForeignKey('Clips', on_delete=models.PROTECT)
 
@@ -38,22 +39,22 @@ class PhotoRep(models.Model):
         verbose_name_plural = 'Фото_отчет'
 
     def __str__(self):
-        return str(self.created_at)
+        return str(self.data_report) + '\t' + str(self.Scr_id) + '\t' + str(self.Clips_id)
 
 
 class Scr(models.Model):
     name = models.CharField(max_length=70, verbose_name='Название')
     nameb = models.IntegerField(verbose_name='Номер экрана')
-    Dir = models.CharField(max_length=50, default='atv', verbose_name='Ресурс')
+    dir = models.CharField(max_length=50, default='atv', verbose_name='Ресурс')
     ip_add = models.GenericIPAddressField(protocol='both', verbose_name='IP_адрес', default='10.10.0.1')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания записи')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата изменения записи')
     photo = models.ImageField(upload_to="photos/%Y/%m/%d/", blank=True, verbose_name='Фото экрана')
-    Check = models.BooleanField(verbose_name='Активен', default=True)
+    check = models.BooleanField(verbose_name='Активен', default=True)
     scr_res = models.ForeignKey('scr_res', on_delete=models.PROTECT, default=1, verbose_name='Разрешение видео')
 
     def __str__(self):
-        return (self.ip_add + "..........." + str(self.scr_res) + '...........' + self.name)
+        return self.name
 
     class Meta:
         verbose_name = 'Экран'
