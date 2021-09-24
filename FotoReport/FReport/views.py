@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from .models import *
 from django.views.generic import ListView
 from .forms import Add_report
-from .my_def import add_clips, def_add_photo
+from .my_def import *
 from django.core.files.storage import FileSystemStorage
 
 
@@ -50,5 +50,16 @@ def simple_upload(request):
             'uploaded_file_url': uploaded_file_url
         })
     return render(request, 'FReport/admins.html')
+
+
+
+
+
+
+def click_copy_files(request):
+    #form = ClipsForm(request.POST)
+    form = Add_report(request.POST)
+    copy_files(find_next_thursday())
+    return render(request, 'FReport/admins.html', {'form': form})
 
 # Create your views here.
