@@ -2,4 +2,5 @@ django==3.2.6
 opencv-python==4.5.3.56
 xlrd==2.0.1
 Pillow==8.3.2
-datetime == 33
+datetime==4.3
+somewhere ==

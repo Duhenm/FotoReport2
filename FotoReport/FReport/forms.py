@@ -20,11 +20,19 @@ class Scr_res_Form(forms.ModelForm):
         model = Scr_res
         fields = ['scr_res_1', 'scr_res_2', 'id']
 
-
+class FileFieldForm(forms.Form):
+    file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
 
 
 class Add_report(forms.Form):
      name2 = forms.FileField(label='Выберете файл с фотоотчетом', required=False)
+
+
+
+class UploadFileForm(forms.Form):
+    title = forms.CharField(max_length=50)
+    file = forms.FileField()
+
 
  #    name2 = forms.CharField(max_length=100, label='Название ролика')
 #    created_at = forms.DateTimeField(label='Дата добавления ролика')
