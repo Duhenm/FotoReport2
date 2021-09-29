@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admins', views.admins, name='admins'),
@@ -12,4 +14,5 @@ urlpatterns = [
     path('click_copy_files', views.click_copy_files, name='click_copy_files'),
     path('create_sc', views.create_sc, name='create_sc'),
     path('montag', views.montag, name='montag'),
-]
+    path('montag2', views.montag2, name='montag2'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

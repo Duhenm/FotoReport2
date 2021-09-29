@@ -192,24 +192,9 @@ def def_add_photo():
             push_entry(dict_video)
 
 
-# Вызов классов
-def def_add_photo2(files_report):
-    text = str(BASE_DIR)
-    text = text.replace('\\', "/")
-    text = text + files_report
-    text = 'C:/111 (2).xls'
-    parser = ExcelFileParser(text)
-    screen_clips_list = parser.parse()
-
-    repository = PhotoReportRepository()
-    repository.add_clips_to_report(screen_clips_list)
 
 
-def get_to_report():
-    data = this_thursday()
-    repository = PhotoReportRepository()
-    my_copy = repository.get_to_report(data)
-    #print(str(my_copy[00].screen_name.ip_add))
+
 
 def create_script():
     dict_result = {}
@@ -263,6 +248,26 @@ class ExcelFileParser:
             screen_clips.append(ScreenClips(screen_name, clips))
 
         return screen_clips
+
+
+
+# Вызов классов
+def def_add_photo2(files_report) -> List[ScreenClips]:
+    text = str(BASE_DIR)
+    text = text.replace('\\', "/")
+    text = text + files_report
+    parser = ExcelFileParser(text)
+    screen_clips_list = parser.parse()
+
+    repository = PhotoReportRepository()
+    repository.add_clips_to_report(screen_clips_list)
+    return screen_clips_list
+
+def get_to_report() -> List[ScreenClips]:
+    data = this_thursday()
+    repository = PhotoReportRepository()
+    return repository.get_to_report(data)
+    #print(str(my_copy[00].screen_name.ip_add))
 
 
 # Репозиторий. Он знает, как общатья с базой.

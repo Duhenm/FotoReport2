@@ -1,12 +1,42 @@
- <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-     {{ form.as_p }}
-    <input type="file" name="myfile">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title style="text-align:center">Панель администратора</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+</head>
+<body>
 
-    <button onclick="document.location='montag'">montag</button>
+</body>
+</html>
+
+<form action="montag" method="post" enctype="multipart/form-data"> {% csrf_token %} {{ form.as_p }}
+
+        <table align="center"  bgcolor="#C0C0C0">
+        {% for item in screen_clips_list %}
+            <tr>
+                <td>
+                    {{ item.screen_name }}
+                </td>
+                <td>
+                    <button value="123456789" type="submit" style='width:400px' >{{ item.screen_name }}</button>
+                    <button style='width:600px' onclick=onclick="document.location='montag2'">{{ item.screen_name }}</button><br>
 
 
-  </form>
+                </td>
+
+            </tr>
+
+        {% endfor %}
+        </table>
+
+
+</form>
+
+
+
+
+
 
 
 

@@ -24,20 +24,21 @@ def handle_uploaded_file(f):
             destination.write(chunk)
 
 
+def montag2(screen: str):
+    screen_clips_list = get_to_report()
+    if screen != '' :
+        return render( 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
+    return render( 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
+
 
 
 def montag(request):
-    data = this_thursday()
-    repository = PhotoReportRepository()
-    script_list = repository.get_to_report(data)
-#    res = ''
-#    for script in script_list:
-#        if len(script.clips) >= 1:
-#            res += f'<div>\n<p>{script.screen_name}</p>\n<hr>'
-
-    return render(request, 'FReport/montag.html', {'form': form})
-
-
+    if request.method == 'POST':
+        screen_clips_list = get_to_report()
+        return render(request, 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
+    else:
+        screen_clips_list = get_to_report()
+        return render(request, 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
 
 class FileFieldFormView(FormView):
     form_class = FileFieldForm
@@ -98,9 +99,9 @@ def admins(request):
         fs = FileSystemStorage()
         filename = fs.save(myfile.name, myfile)
         uploaded_file_url = fs.url(filename)
-        def_add_photo2(uploaded_file_url)
+        screen_clips_list = def_add_photo2(uploaded_file_url)
         return render(request, 'FReport/admins.html', {
-            'uploaded_file_url': uploaded_file_url
+            'uploaded_file_url': uploaded_file_url, 'screen_clips_list': screen_clips_list
         })
     return render(request, 'FReport/admins.html')
    # print("selected file: " + request.POST["name"])
