@@ -1,5 +1,9 @@
 import os, cv2, xlrd, datetime
 import shutil
+import time
+
+import paramiko as paramiko
+
 from settings import BASE_DIR
 
 from typing import List
@@ -45,6 +49,7 @@ def normalize_text_creating_list(text):
     text = text.lstrip(',')
     text = text.lstrip()
     text = text.replace("\xa0", "")
+    text = text.replace("\n", "")
     text = text.replace(".avi", "")
     text = text.replace(".", ",")
     text = text.replace(" ", ",")
@@ -56,6 +61,31 @@ def normalize_text_creating_list(text):
         if len(name_video) > 10:  # MINIMAL_FILE_NAME_LENGTH
             normalize_list.append(name_video + '.avi')
     return normalize_list
+
+
+def conect_ssh(id):
+    user = 'Screen'
+    secret = 'D)minant1'
+    port = 22
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    screen_clips_list = get_to_report(id)
+    # Подключение
+    host = screen_clips_list[0].screen_name.ip_add
+    client.connect(hostname=host, username=user, password=secret, port=port)
+
+    # Выполнение команды
+    stdin, stdout, stderr = client.exec_command('schtasks /end /tn CS')
+
+    time.sleep(3)
+    stdin, stdout, stderr = client.exec_command('taskkill /IM ATV* /f')
+    stdin, stdout, stderr = client.exec_command('taskkill /IM javaw.exe /f')
+    stdin, stdout, stderr = client.exec_command('taskkill /IM cityscreen-player.exe /f')
+    stdin, stdout, stderr = client.exec_command('schtasks /run /tn ATV')
+    # Читаем результат
+    #data = stdout.read() + stderr.read()
+    client.close()
+   # print(data)
 
 
 def find_next_thursday():
@@ -200,7 +230,7 @@ def create_script():
     dict_result = {}
     data = this_thursday()
     repository = PhotoReportRepository()
-    script_list = repository.get_to_report(data)
+    script_list = repository.get_to_report(data, 0)
     #print(str(my_copy[00].screen_name.ip_add))
     for script in script_list:
         if len(script.clips) >= 1:
@@ -218,11 +248,15 @@ def create_script():
                     file_start_up_script.write('play ' + str(clips_item) + '; ')
                     list_result = list_result + 'play ' + str(clips_item) + '; '
                 dict_result[script.screen_name] = list_result
+                file_start_up_script.write(' exec c:\start_t.cmd')
                 file_start_up_script.close()
-
+    print(dict_result)
     return dict_result
 
-
+class ClipsList:
+    def __init__(self, screen_name: str, clip_list: List[str]):
+        self.screen_name = screen_name
+        self.clips = clip_list
 
 # DTO, хранит данные. Используется для передачи данных внутри программы
 class ScreenClips:
@@ -263,10 +297,10 @@ def def_add_photo2(files_report) -> List[ScreenClips]:
     repository.add_clips_to_report(screen_clips_list)
     return screen_clips_list
 
-def get_to_report() -> List[ScreenClips]:
+def get_to_report(id) -> List[ScreenClips]:
     data = this_thursday()
     repository = PhotoReportRepository()
-    return repository.get_to_report(data)
+    return repository.get_to_report(data, id)
     #print(str(my_copy[00].screen_name.ip_add))
 
 
@@ -309,8 +343,11 @@ class PhotoReportRepository:
         return True
 
     @staticmethod
-    def get_to_report(data) -> List[ScreenClips]:
-        screen_list = Scr.objects.filter(check=True)
+    def get_to_report(data,id) -> List[ScreenClips]:
+        if id == 0:
+            screen_list = Scr.objects.filter(check=True)
+        else:
+            screen_list = Scr.objects.filter(check=True, id=id)
         screen_clips = []
 
         for screen in screen_list:

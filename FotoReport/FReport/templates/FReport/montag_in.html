@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title style="text-align:center">Панель администратора</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div style="text-align:center">
+        <h1>Включение фотоотчета</h1>
+        <br>
+        <h1><a href="{% url 'montag' %}">Основная панель</a></h1>
+        <br>
+        <br>
+    </div>
+
+</body>
+</html>
+
+<form action="montag_in" method="post" enctype="multipart/form-data"> {% csrf_token %} {{ form.as_p }}
+
+        <table align="center"  bgcolor="#C0C0C0">
+        {% for item in screen_clips_list %}
+            <tr>
+
+                <td>
+                    <a href="/montag/start/{{item.screen_name.id}}" >{{item.screen_name.name}}</a><br>
+                    <a href="/montag/start/{{item.screen_name.id}}"><img src="{{item.screen_name.photo.url}}" width="400"
+                                           alt="Пример"></a>
+                </td>
+                <td>
+                    {% for clip in item.clips %}
+                        {{clip}}<br>
+                    {% endfor %}
+                </td>
+            </tr>
+
+        {% endfor %}
+        </table>
+
+
+</form>
+
+
+
+
+
+
+
+
+

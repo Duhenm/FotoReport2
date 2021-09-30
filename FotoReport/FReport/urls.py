@@ -13,6 +13,10 @@ urlpatterns = [
     path('foto_add', views.foto_add, name='foto_add'),
     path('click_copy_files', views.click_copy_files, name='click_copy_files'),
     path('create_sc', views.create_sc, name='create_sc'),
+    path('montag/<id>', views.montag2, name='montag2'),
+    path('montag/start/<id>', views.start_report, name='start_report'),
     path('montag', views.montag, name='montag'),
-    path('montag2', views.montag2, name='montag2'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    #path('montag/<id>', views.montag2, name='montag2'),
+]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

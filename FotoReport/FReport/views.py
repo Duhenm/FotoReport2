@@ -24,20 +24,26 @@ def handle_uploaded_file(f):
             destination.write(chunk)
 
 
-def montag2(screen: str):
-    screen_clips_list = get_to_report()
-    if screen != '' :
-        return render( 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
-    return render( 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
+def montag2(request, id):
+    screen_clips_list = get_to_report(id)
+    # if screen != '' :
+    #     return render(request, 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
+    return render(request, 'FReport/montag_in.html', {'screen_clips_list': screen_clips_list})
 
+def start_report(request, id):
+    conect_ssh(id)
+    screen_clips_list = get_to_report(0)
+    return render(request, 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
 
 
 def montag(request):
-    if request.method == 'POST':
-        screen_clips_list = get_to_report()
+
+    if request.method == 'GET':
+        screen_clips_list = get_to_report(0)
         return render(request, 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
     else:
-        screen_clips_list = get_to_report()
+
+        screen_clips_list = get_to_report(0)
         return render(request, 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
 
 class FileFieldFormView(FormView):
@@ -99,10 +105,13 @@ def admins(request):
         fs = FileSystemStorage()
         filename = fs.save(myfile.name, myfile)
         uploaded_file_url = fs.url(filename)
-        screen_clips_list = def_add_photo2(uploaded_file_url)
-        return render(request, 'FReport/admins.html', {
-            'uploaded_file_url': uploaded_file_url, 'screen_clips_list': screen_clips_list
-        })
+        def_add_photo()
+        return render(request, 'FReport/admins.html')
+        #screen_clips_list =
+        #screen_clips_list = def_add_photo2(uploaded_file_url)
+      #  return render(request, 'FReport/admins.html', {
+      #      'uploaded_file_url': uploaded_file_url, 'screen_clips_list': screen_clips_list
+     #   })
     return render(request, 'FReport/admins.html')
    # print("selected file: " + request.POST["name"])
     #form = Add_report(request.POST)

@@ -6,7 +6,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css">
 </head>
 <body>
-
+    <div style="text-align:center">
+        <h1>Панель монтажника</h1>
+        <br>
+        <br>
+    </div>
 </body>
 </html>
 
@@ -16,13 +20,11 @@
         {% for item in screen_clips_list %}
             <tr>
                 <td>
-                    {{ item.screen_name }}
+                    <a href="/montag/{{item.screen_name.id}}" >{{item.screen_name.name}}</a><br>
                 </td>
                 <td>
-                    <button value="123456789" type="submit" style='width:400px' >{{ item.screen_name }}</button>
-                    <button style='width:600px' onclick=onclick="document.location='montag2'">{{ item.screen_name }}</button><br>
-
-
+                    <a href="/montag/{{item.screen_name.id}}"><img src="{{item.screen_name.photo.url}}" width="400"
+                                           alt="Пример"></a>
                 </td>
 
             </tr>
