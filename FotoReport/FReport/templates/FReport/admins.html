@@ -34,11 +34,11 @@
         </div>
 
     {% if uploaded_file_url %}
-        <table align="center"  bgcolor="#C0C0C0">
+        <table align="center"  bgcolor="#C0C0C0" style='width:900px'>
         {% for item in screen_clips_list %}
             <tr>
                 <td>
-                    {{ item.screen_name }}
+                    {{ item.screen }}
                 </td>
                 <td>
                 {% for clp in item.clips %}

@@ -24,13 +24,12 @@
             <tr>
 
                 <td>
-                    <a href="/montag/start/{{item.screen_name.id}}" >{{item.screen_name.name}}</a><br>
-                    <a href="/montag/start/{{item.screen_name.id}}"><img src="{{item.screen_name.photo.url}}" width="400"
-                                           alt="Пример"></a>
+                    <a href="/montag/start/{{item.screen.id}}" >{{item.screen.name}}</a><br>
+                    <a href="/montag/start/{{item.screen.id}}"><img src="{{item.screen.photo.url}}" width="400"></a>
                 </td>
                 <td>
                     {% for clip in item.clips %}
-                        {{clip}}<br>
+                        <a href="/montag/start/{{item.screen.id}}/{{clip}}">{{clip}}</a><br>
                     {% endfor %}
                 </td>
             </tr>

@@ -15,6 +15,7 @@ urlpatterns = [
     path('create_sc', views.create_sc, name='create_sc'),
     path('montag/<id>', views.montag2, name='montag2'),
     path('montag/start/<id>', views.start_report, name='start_report'),
+    path('montag/start/<id>/<clip>', views.start_report, name='start_report'),
     path('montag', views.montag, name='montag'),
     #path('montag/<id>', views.montag2, name='montag2'),
 ]

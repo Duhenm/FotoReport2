@@ -30,10 +30,16 @@ def montag2(request, id):
     #     return render(request, 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
     return render(request, 'FReport/montag_in.html', {'screen_clips_list': screen_clips_list})
 
-def start_report(request, id):
-    conect_ssh(id)
-    screen_clips_list = get_to_report(0)
-    return render(request, 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
+def start_report(request, id, clip=''):
+    if request.method == 'GET':
+        if clip=='':
+            ConectControlSsh.conect_ssh(id)
+        else:
+            ConectControlSsh.conect_ssh(id, clip)
+            clip = ''
+    screen_clips_list = get_to_report(id)
+    clip = ''
+    return render(request, 'FReport/montag_in.html', {'screen_clips_list': screen_clips_list})
 
 
 def montag(request):
@@ -46,21 +52,6 @@ def montag(request):
         screen_clips_list = get_to_report(0)
         return render(request, 'FReport/montag.html', {'screen_clips_list': screen_clips_list})
 
-class FileFieldFormView(FormView):
-    form_class = FileFieldForm
-    template_name = 'upload.html'  # Replace with your template.
-    success_url = '...'  # Replace with your URL or reverse().
-
-    def post(self, request, *args, **kwargs):
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        files = request.FILES.getlist('file_field')
-        if form.is_valid():
-            for f in files:
-                ...  # Do something with each file.
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
 
 
 
@@ -93,10 +84,8 @@ def foto_add(request):
 
 
 def create_sc(request):
-    #form = ClipsForm(request.POST)
-    form = Add_report(request.POST)
-    create_script()
-    return render(request, 'FReport/admins.html', {'form': form})
+    screen_clips_list = CreateScriptScreen.create_script(0)
+    return render(request, 'FReport/admins.html', {'screen_clips_list': screen_clips_list})
 
 
 def admins(request):
@@ -105,17 +94,17 @@ def admins(request):
         fs = FileSystemStorage()
         filename = fs.save(myfile.name, myfile)
         uploaded_file_url = fs.url(filename)
-        def_add_photo()
-        return render(request, 'FReport/admins.html')
+        #def_add_photo()
+        #return render(request, 'FReport/admins.html')
         #screen_clips_list =
-        #screen_clips_list = def_add_photo2(uploaded_file_url)
-      #  return render(request, 'FReport/admins.html', {
-      #      'uploaded_file_url': uploaded_file_url, 'screen_clips_list': screen_clips_list
-     #   })
-    return render(request, 'FReport/admins.html')
+        screen_clips_list = def_add_photo2(uploaded_file_url)
+        return render(request, 'FReport/admins.html', {
+            'uploaded_file_url': uploaded_file_url, 'screen_clips_list': screen_clips_list
+        })
+    #return render(request, 'FReport/admins.html')
    # print("selected file: " + request.POST["name"])
     #form = Add_report(request.POST)
-    #return render(request, 'FReport/admins.html', {'form': form})
+    return render(request, 'FReport/admins.html')
 
 
 def FO(request):

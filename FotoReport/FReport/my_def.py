@@ -62,30 +62,43 @@ def normalize_text_creating_list(text):
             normalize_list.append(name_video + '.avi')
     return normalize_list
 
+class ConectControlSsh():
+    def __init__(self, screen_nam: int, clip: str):
+        self._screen_nam = screen_nam
+        self._clip = clip
 
-def conect_ssh(id):
-    user = 'Screen'
-    secret = 'D)minant1'
-    port = 22
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    screen_clips_list = get_to_report(id)
-    # Подключение
-    host = screen_clips_list[0].screen_name.ip_add
-    client.connect(hostname=host, username=user, password=secret, port=port)
+    @staticmethod
+    def conect_ssh(id: int, clip=''):
+        screen = PhotoReportRepository.get_screen(id)
+        user = 'Screen'
+        secret = 'D)minant1'
+        port = 22
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        host = screen.ip_add
+        client.connect(hostname=host, username=user, password=secret, port=port)
+        if clip == '':
+            CreateScriptScreen.create_script(id)
+            client.exec_command('schtasks /end /tn CS')
+            time.sleep(2)
+            client.exec_command('taskkill /IM ATV* /f')
+            client.exec_command('taskkill /IM javaw.exe /f')
+            client.exec_command('taskkill /IM cityscreen-player.exe /f')
+            client.exec_command('schtasks /run /tn ATV')
+        else:
+            CreateScriptScreen.create_script(id, clip)
+            client.exec_command('schtasks /end /tn ATV')
+            time.sleep(2)
+            client.exec_command('taskkill /IM ATV* /f')
+            client.exec_command('schtasks /run /tn ATV')
+            time.sleep(6)
+            client.exec_command('schtasks /end /tn ATV')
+            client.exec_command('taskkill /IM ATV* /f')
 
-    # Выполнение команды
-    stdin, stdout, stderr = client.exec_command('schtasks /end /tn CS')
+        client.close()
 
-    time.sleep(3)
-    stdin, stdout, stderr = client.exec_command('taskkill /IM ATV* /f')
-    stdin, stdout, stderr = client.exec_command('taskkill /IM javaw.exe /f')
-    stdin, stdout, stderr = client.exec_command('taskkill /IM cityscreen-player.exe /f')
-    stdin, stdout, stderr = client.exec_command('schtasks /run /tn ATV')
-    # Читаем результат
-    #data = stdout.read() + stderr.read()
-    client.close()
-   # print(data)
+
+
 
 
 def find_next_thursday():
@@ -100,63 +113,6 @@ def this_thursday():
 
 
 
-#возврат неправельно названых выдео
-def check_name(dict_video):
-    dict_error = {}
-    for key in dict_video:
-        list_video = dict_video[key]
-        list_error = []
-        for name_video in list_video:
-            clip = Clips.objects.filter(name=name_video)
-            if not clip:
-                list_error.append(name_video)
-        if len(list_error) != 0:
-            dict_error[key] = list_error
-    return dict_error
-
-#проверка разрешения экрана и ролика
-def check_resolution(dict_video):
-    dict_error = {}
-    for key in dict_video:
-        screen = Scr.objects.filter(name=key)
-        list_video = dict_video[key]
-        list_error = []
-        for name_video in list_video:
-            clip = Clips.objects.filter(name=name_video)
-            if clip[0].scr_res_id != screen[0].scr_res:
-                list_error.append(name_video)
-        if len(list_error) != 0:
-            dict_error[key] = list_error
-    return dict_error
-
-#запись в базу
-def push_entry(dict_video):
-    for key in dict_video:
-        list_video = dict_video[key]
-        for name_video in list_video:
-            screen = Scr.objects.filter(name=key)
-            clip = Clips.objects.filter(name=name_video)
-            data = find_next_thursday()
-            photorep_entry=PhotoRep.objects.filter(Scr_id=screen[0], Clips_id=clip[0], data_report=data)
-            if (len(photorep_entry)) == 0:
-                new_entry = PhotoRep(Scr_id=screen[0], Clips_id=clip[0], data_report=data)
-                new_entry.save()
-    return True
-
-#количество роликов
-def count_entry(dict_video):
-    count = 0
-    for key in dict_video:
-        list_video = dict_video[key]
-        count += len(list_video)
-    return count
-
-
-#проверка наличия элемента в списке
-def item_in_list(list,x):
-    for i in list:
-        if i == x:
-            return True
 
 
 
@@ -197,72 +153,53 @@ def copy_files(data_report):
 
 
 
+class CreateScriptScreen:
+    def __init__(self, screen_number: int, clip=''):
+        self._screen_number = screen_number
+        self._clip = clip
+
+    @staticmethod
+    def create_script(screen_number: int, clip='') -> List:
+        list_result = []
+        data = this_thursday()
+        repository = PhotoReportRepository()
+        script_list = repository.get_to_report(data, screen_number)
+        for script in script_list:
+            if len(script.clips) >= 1:
+                try:
+                    file_start_up_script = open('//' + str(script.screen.ip_add) + '/'
+                                                + script.screen.dir + '/StartUpScript.txt', 'w')
+                except:
+                    list_result.append(str(script.screen) + "   Экран не доступен")
+                else:
+                    file_start_up_script.write('telnet -up' + '\n')
+                    file_start_up_script.write('__dev -up' + '\n')
+                    if clip == '':
+                        for clips_item in script.clips:
+                            file_start_up_script.write('play ' + str(clips_item) + '; ')
+                        file_start_up_script.write(' exec c:\start_t.cmd')
+                    else:
+                        file_start_up_script.write('play ' + clip + '; ')
+                        file_start_up_script.write(' exit')
+                    file_start_up_script.close()
+                    list_result.append(str(script.screen) + "   Скипт сформирован")
+        return list_result
 
 
-def def_add_photo():
-    path = 'c:/ЗАЯВКА.xls'
-    exel = xlrd.open_workbook(path, formatting_info=True)
-    sheet = exel.sheet_by_index(0)
-    dict_video = {}
-    i = 4  # Магия!!!
-    while i < 28:  # Магия!!!
-        src_name = str(sheet.row_values(i)[1])
-        list_clips = normalize_text_creating_list(str(sheet.row_values(i)[2]))
-        dict_video.update({sheet.row_values(i)[1]: list_clips})
-        i = i + 1  # Может использовать for
-    dict_error = check_name(dict_video)
 
-    if dict_error != {}:
-        print('Найдены ошибки', dict_error) ##нужен вывод в таблицу на страницу
-    else:
-        dict_error = check_resolution(dict_video)
-        if dict_error != {}:
-            print('Найдены ошибки', dict_error)  ##нужен вывод в таблицу на страницу
-        else:
-            push_entry(dict_video)
-
-
-
-
-
-
-def create_script():
-    dict_result = {}
-    data = this_thursday()
-    repository = PhotoReportRepository()
-    script_list = repository.get_to_report(data, 0)
-    #print(str(my_copy[00].screen_name.ip_add))
-    for script in script_list:
-        if len(script.clips) >= 1:
-            try:
-                file_start_up_script = open('//' + str(script.screen_name.ip_add) + '/'
-                                            + script.screen_name.dir + '/StartUpScript.txt', 'w')
-            except:
-                dict_result[script.screen_name] = "Экран не доступен"
-            else:
-                file_start_up_script.write('telnet -up' + '\n')
-                list_result = 'telnet -up' + '\n'
-                file_start_up_script.write('__dev -up' + '\n')
-                list_result = list_result + '__dev -up' + '\n'
-                for clips_item in script.clips:
-                    file_start_up_script.write('play ' + str(clips_item) + '; ')
-                    list_result = list_result + 'play ' + str(clips_item) + '; '
-                dict_result[script.screen_name] = list_result
-                file_start_up_script.write(' exec c:\start_t.cmd')
-                file_start_up_script.close()
-    print(dict_result)
-    return dict_result
-
-class ClipsList:
-    def __init__(self, screen_name: str, clip_list: List[str]):
-        self.screen_name = screen_name
-        self.clips = clip_list
 
 # DTO, хранит данные. Используется для передачи данных внутри программы
 class ScreenClips:
-    def __init__(self, screen_name: str, clip_list: List[str]):
-        self.screen_name = screen_name
+    def __init__(self, screen: str, clip_list: List[str]):
+        self.screen = screen
         self.clips = clip_list
+
+class ScreenClass:
+    def __init__(self, name: str, num: int, dir: str, ip_add: str):
+        self.name = name
+        self.num = num
+        self.dir = dir
+        self.ip_add = ip_add
 
 
 # Парсер. Его дело - извлечь данные из Excel
@@ -276,10 +213,10 @@ class ExcelFileParser:
 
         screen_clips = []
         for i in range(4, 28):
-            screen_name = str(sheet.row_values(i)[1])
+            screen = str(sheet.row_values(i)[1])
             joined_clips_string = str(sheet.row_values(i)[2])
             clips = normalize_text_creating_list(joined_clips_string)
-            screen_clips.append(ScreenClips(screen_name, clips))
+            screen_clips.append(ScreenClips(screen, clips))
 
         return screen_clips
 
@@ -294,8 +231,12 @@ def def_add_photo2(files_report) -> List[ScreenClips]:
     screen_clips_list = parser.parse()
 
     repository = PhotoReportRepository()
-    repository.add_clips_to_report(screen_clips_list)
+
+    if len(repository.add_clips_to_report(screen_clips_list)) != 0:
+        screen_clips_list = repository.add_clips_to_report(screen_clips_list)
+
     return screen_clips_list
+
 
 def get_to_report(id) -> List[ScreenClips]:
     data = this_thursday()
@@ -306,19 +247,17 @@ def get_to_report(id) -> List[ScreenClips]:
 
 # Репозиторий. Он знает, как общатья с базой.
 class PhotoReportRepository:
-    def add_clips_to_report(self, screen_clips_list: List[ScreenClips]):
-        wrong_screen_names = [item.screen_name for item in screen_clips_list if not self.is_screen_exist(item.screen_name)]
+    def add_clips_to_report(self, screen_clips_list: List[ScreenClips]) -> dict:
+        wrong_screen_names = [item.screen for item in screen_clips_list if not self.is_screen_exist(item.screen)]
         if wrong_screen_names:
             print('Экраны не найдены в БД', wrong_screen_names)  ## нужен вывод в таблицу на страницу
             # FIXME: raise exception вместо print/return, после этого вынести в отдельный метод validate
-            return
+        if len(self.validate(screen_clips_list)) == 0:
+            for screen_clips in screen_clips_list:
+                self._save_clips_report(screen_clips)
+        else:
 
-        # TODO: аналогично проверить названия видео
-        # TODO: аналогично проверить разрешение
-
-        for screen_clips in screen_clips_list:
-            self._save_clips_report(screen_clips)
-
+            return self.validate(screen_clips_list)
     @staticmethod
     def is_screen_exist(screen_name: str) -> bool:
         screen = Scr.objects.filter(name=screen_name)
@@ -328,9 +267,42 @@ class PhotoReportRepository:
             return False
 
     @staticmethod
+    def is_clip_exist(clip: str) -> bool:
+        clip = Clips.objects.filter(name=clip)
+        if clip:
+            return True
+        else:
+            return False
+
+
+    @staticmethod
+    def validate(screen_clips_list: List[ScreenClips]) -> dict:
+        def is_clip_exist(clip: str) -> bool:
+            clip = Clips.objects.filter(name=clip)
+            if clip:
+                return True
+            else:
+                return False
+        dict_result = {}
+        for screens in screen_clips_list:
+            screen = Scr.objects.filter(name=screens.screen)
+            list_result = []
+            for clips in screens.clips:
+                if not is_clip_exist(clips):
+                    list_result.append(clips + 'Ролик не найден')
+                else:
+                    clip = Clips.objects.filter(name=clips)
+                    if clip[0].scr_res_id != screen[0].scr_res:
+                        list_result.append(clip[0].name + 'Разрешение не соотвествует')
+            if len(list_result) != 0:
+                dict_result[screens] = list_result
+        return dict_result
+
+
+    @staticmethod
     def _save_clips_report(screen_clips: ScreenClips):
         for clip in screen_clips.clips:
-            screen_entity = Scr.objects.filter(name=screen_clips.screen_name)
+            screen_entity = Scr.objects.filter(name=screen_clips.screen)
             clip_entity = Clips.objects.filter(name=clip)
             date = find_next_thursday()
             # FIXME: проверить на пустоту
@@ -343,19 +315,22 @@ class PhotoReportRepository:
         return True
 
     @staticmethod
-    def get_to_report(data,id) -> List[ScreenClips]:
+    def get_to_report(data, id: int) -> List[ScreenClips]:
         if id == 0:
             screen_list = Scr.objects.filter(check=True)
         else:
             screen_list = Scr.objects.filter(check=True, id=id)
         screen_clips = []
-
         for screen in screen_list:
             clip_list = []
             photo_report_queryset = PhotoRep.objects.filter(data_report=data, Scr_id=screen)
             for clips in photo_report_queryset:
                 clip_list.append(clips.Clips_id.name)
             screen_clips.append(ScreenClips(screen, clip_list))
-
-
         return screen_clips
+    @staticmethod
+    def get_screen(id: int) -> ScreenClass:
+        screen_query = Scr.objects.filter(check=True, id=id)
+       # print(screen_query[0].nameb, screen_query[0].dir)
+        screen = ScreenClass(screen_query[0].name, screen_query[0].nameb, screen_query[0].dir, str(screen_query[0].ip_add))
+        return screen
