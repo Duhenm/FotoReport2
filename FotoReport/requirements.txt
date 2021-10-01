@@ -3,4 +3,5 @@ opencv-python==4.5.3.56
 xlrd==2.0.1
 Pillow==8.3.2
 datetime==4.3
-somewhere ==
+somewhere ==0.0.1
+paramiko ==2.7.2
