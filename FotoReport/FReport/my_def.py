@@ -62,6 +62,21 @@ def normalize_text_creating_list(text):
             normalize_list.append(name_video + '.avi')
     return normalize_list
 
+class password():
+    __user: str
+    __password: str
+    def __init__(self):
+        file_password = open('c:/password.txt', 'r')
+        self.__user = file_password.readline().replace("\n", "")
+        self.__password = file_password.readline()
+        file_password.close()
+
+    def get_password(self):
+        return self.__password
+
+    def get_user(self):
+        return self.__user
+
 class ConectControlSsh():
     def __init__(self, screen_nam: int, clip: str):
         self._screen_nam = screen_nam
@@ -70,13 +85,9 @@ class ConectControlSsh():
     @staticmethod
     def conect_ssh(id: int, clip=''):
         screen = PhotoReportRepository.get_screen(id)
-        user = 'Screen'
-        secret = 'D)minant1'
-        port = 22
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        host = screen.ip_add
-        client.connect(hostname=host, username=user, password=secret, port=port)
+        client.connect(hostname=screen.ip_add, username=password().get_user(), password=password().get_password(), port=22)
         if clip == '':
             CreateScriptScreen.create_script(id)
             client.exec_command('schtasks /end /tn CS')
@@ -84,15 +95,15 @@ class ConectControlSsh():
             client.exec_command('taskkill /IM ATV* /f')
             client.exec_command('taskkill /IM javaw.exe /f')
             client.exec_command('taskkill /IM cityscreen-player.exe /f')
-            client.exec_command('schtasks /run /tn ATV')
+            client.exec_command('schtasks /run /tn '+screen.dir)
         else:
             CreateScriptScreen.create_script(id, clip)
-            client.exec_command('schtasks /end /tn ATV')
+            client.exec_command('schtasks /end /tn '+screen.dir)
             time.sleep(2)
             client.exec_command('taskkill /IM ATV* /f')
-            client.exec_command('schtasks /run /tn ATV')
+            client.exec_command('schtasks /run /tn '+screen.dir)
             time.sleep(6)
-            client.exec_command('schtasks /end /tn ATV')
+            client.exec_command('schtasks /end /tn '+screen.dir)
             client.exec_command('taskkill /IM ATV* /f')
 
         client.close()
