@@ -1,7 +1,6 @@
 import os, cv2, xlrd, datetime
 import shutil
 
-
 import paramiko as paramiko
 
 from settings import BASE_DIR
@@ -11,10 +10,11 @@ from typing import List
 from .models import *
 
 CLIPS_DIR = "//dc1/Советская/_Clips"
+
+
 # Hotkey - найти использование метода Ctrl + Alt + F7
 
 # Добавление новых роликов в базу
-
 
 
 def add_clips():  # глагол вначале -> add_clips
@@ -26,7 +26,8 @@ def add_clips():  # глагол вначале -> add_clips
         if not find_clips:
             screen_resolution = ''  # понятное название переменной
             if name_file.find('.avi'):  # в константы
-                vid = cv2.VideoCapture(CLIPS_DIR + '/' + name_file)  # Для склейки файлов используется что-то типа path.join
+                vid = cv2.VideoCapture(
+                    CLIPS_DIR + '/' + name_file)  # Для склейки файлов используется что-то типа path.join
                 height = round(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
                 width = round(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
                 screen_resolution = Scr_res.objects.filter(scr_res_1=width, scr_res_2=height)  # Избегай сокращений
@@ -62,20 +63,22 @@ def normalize_text_creating_list(text):
             normalize_list.append(name_video + '.avi')
     return normalize_list
 
+
 class password():
     __user: str
     __password: str
+
     def __init__(self):
-        with open ('c:/password.txt', 'r') as file_password:
+        with open('c:/password.txt', 'r') as file_password:
             self.__user = file_password.readline().replace("\n", "")
             self.__password = file_password.readline()
-
 
     def get_password(self):
         return self.__password
 
     def get_user(self):
         return self.__user
+
 
 class ConectControlSsh():
     def __init__(self, screen_nam: int, clip: str):
@@ -87,7 +90,8 @@ class ConectControlSsh():
         screen = PhotoReportRepository.get_screen(id)
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(hostname=screen.ip_add, username=password().get_user(), password=password().get_password(), port=22)
+        client.connect(hostname=screen.ip_add, username=password().get_user(), password=password().get_password(),
+                       port=22)
         if clip == '':
             CreateScriptScreen.create_script(id)
             client.exec_command('schtasks /end /tn CS')
@@ -95,21 +99,18 @@ class ConectControlSsh():
             client.exec_command('taskkill /IM ATV* /f')
             client.exec_command('taskkill /IM javaw.exe /f')
             client.exec_command('taskkill /IM cityscreen-player.exe /f')
-            client.exec_command('schtasks /run /tn '+screen.dir)
+            client.exec_command('schtasks /run /tn ' + screen.dir)
         else:
             CreateScriptScreen.create_script(id, clip)
-            client.exec_command('schtasks /end /tn '+screen.dir)
+            client.exec_command('schtasks /end /tn ' + screen.dir)
             datetime.time.sleep(2)
             client.exec_command('taskkill /IM ATV* /f')
-            client.exec_command('schtasks /run /tn '+screen.dir)
+            client.exec_command('schtasks /run /tn ' + screen.dir)
             datetime.time.sleep(6)
-            client.exec_command('schtasks /end /tn '+screen.dir)
+            client.exec_command('schtasks /end /tn ' + screen.dir)
             client.exec_command('taskkill /IM ATV* /f')
 
         client.close()
-
-
-
 
 
 def find_next_thursday():
@@ -118,16 +119,12 @@ def find_next_thursday():
     else:
         return datetime.date.today() + datetime.timedelta(days=-datetime.date.today().weekday() + 3)
 
+
 def this_thursday():
     return datetime.date.today() + datetime.timedelta(days=-datetime.date.today().weekday() + 3)
 
 
-
-
-
-
-
-#копирования файлов на экраны
+# копирования файлов на экраны
 def copy_files(data_report):
     dict_result = {}
     try:
@@ -138,7 +135,7 @@ def copy_files(data_report):
         scr_queryset = Scr.objects.filter(check=True)
         for scr_item in scr_queryset:
             try:
-                list_files_screen = os.listdir('//'+scr_item.ip_add + '/'+ scr_item.dir+'/data')
+                list_files_screen = os.listdir('//' + scr_item.ip_add + '/' + scr_item.dir + '/data')
             except:
                 dict_result[scr_item.name] = "Экран не доступен"
             else:
@@ -146,22 +143,23 @@ def copy_files(data_report):
                 photo_report_queryset = PhotoRep.objects.filter(data_report=data_report, Scr_id=scr_item)
                 for photo_report_item in photo_report_queryset:
                     try:
-                        os.path.exists(CLIPS_DIR+'/' + str(photo_report_item.Clips_id))
+                        os.path.exists(CLIPS_DIR + '/' + str(photo_report_item.Clips_id))
                     except:
                         list_result.append(str(photo_report_item.Clips_id) + '  Видеоролик не доступен')
                     else:
                         if not item_in_list(list_files_screen, str(photo_report_item.Clips_id)):
                             try:
-                                shutil.copy(CLIPS_DIR+'/' + str(photo_report_item.Clips_id), "//"
-                                    + scr_item.ip_add + '/'+ scr_item.dir + '/data/'+ str(photo_report_item.Clips_id))
+                                shutil.copy(CLIPS_DIR + '/' + str(photo_report_item.Clips_id), "//"
+                                            + scr_item.ip_add + '/' + scr_item.dir + '/data/' + str(
+                                    photo_report_item.Clips_id))
                             except:
-                                list_result.append(str(photo_report_item.Clips_id) + 'Видеоролик не удалось скопировать')
+                                list_result.append(
+                                    str(photo_report_item.Clips_id) + 'Видеоролик не удалось скопировать')
                             else:
                                 list_result.append(str(photo_report_item.Clips_id) + '  Видеоролик скорирован')
                     if len(list_result) >= 1:
                         dict_result[scr_item.name] = list_result
     return dict_result
-
 
 
 class CreateScriptScreen:
@@ -178,21 +176,19 @@ class CreateScriptScreen:
         for script in script_list:
             if len(script.clips) >= 1:
                 with open('//' + str(script.screen.ip_add) + '/'
-                          + script.screen.dir + '/StartUpScript.txt', 'w')as file_start_up_script:
-                        file_start_up_script.write('telnet -up' + '\n')
-                        file_start_up_script.write('__dev -up' + '\n')
-                        if clip == '':
-                            for clips_item in script.clips:
-                                file_start_up_script.write('play ' + str(clips_item) + '; ')
-                            file_start_up_script.write(' exec c:\start_t.cmd')
-                        else:
-                            file_start_up_script.write('play ' + clip + '; ')
-                            file_start_up_script.write(' exit')
-                        list_result.append(str(script.screen) + "   Скипт сформирован")
+                          + script.screen.dir + '/StartUpScript.txt', 'w') as file_start_up_script:
+                    file_start_up_script.write('telnet -up' + '\n')
+                    file_start_up_script.write('__dev -up' + '\n')
+                    if clip == '':
+                        for clips_item in script.clips:
+                            file_start_up_script.write('play ' + str(clips_item) + '; ')
+                        file_start_up_script.write(' exec c:\start_t.cmd')
+                    else:
+                        file_start_up_script.write('play ' + clip + '; ')
+                        file_start_up_script.write(' exit')
+                    list_result.append(str(script.screen) + "   Скипт сформирован")
 
         return list_result
-
-
 
 
 # DTO, хранит данные. Используется для передачи данных внутри программы
@@ -200,6 +196,7 @@ class ScreenClips:
     def __init__(self, screen: str, clip_list: List[str]):
         self.screen = screen
         self.clips = clip_list
+
 
 class ScreenClass:
     def __init__(self, name: str, num: int, dir: str, ip_add: str):
@@ -228,7 +225,6 @@ class ExcelFileParser:
         return screen_clips
 
 
-
 # Вызов классов
 def def_add_photo2(files_report) -> List[ScreenClips]:
     text = str(BASE_DIR)
@@ -249,7 +245,7 @@ def get_to_report(id) -> List[ScreenClips]:
     data = this_thursday()
     repository = PhotoReportRepository()
     return repository.get_to_report(data, id)
-    #print(str(my_copy[00].screen_name.ip_add))
+    # print(str(my_copy[00].screen_name.ip_add))
 
 
 # Репозиторий. Он знает, как общатья с базой.
@@ -265,6 +261,7 @@ class PhotoReportRepository:
         else:
 
             return self.validate(screen_clips_list)
+
     @staticmethod
     def is_screen_exist(screen_name: str) -> bool:
         screen = Scr.objects.filter(name=screen_name)
@@ -281,7 +278,6 @@ class PhotoReportRepository:
         else:
             return False
 
-
     @staticmethod
     def validate(screen_clips_list: List[ScreenClips]) -> dict:
         def is_clip_exist(clip: str) -> bool:
@@ -290,6 +286,7 @@ class PhotoReportRepository:
                 return True
             else:
                 return False
+
         dict_result = {}
         for screens in screen_clips_list:
             screen = Scr.objects.filter(name=screens.screen)
@@ -304,7 +301,6 @@ class PhotoReportRepository:
             if len(list_result) != 0:
                 dict_result[screens] = list_result
         return dict_result
-
 
     @staticmethod
     def _save_clips_report(screen_clips: ScreenClips):
@@ -335,9 +331,11 @@ class PhotoReportRepository:
                 clip_list.append(clips.Clips_id.name)
             screen_clips.append(ScreenClips(screen, clip_list))
         return screen_clips
+
     @staticmethod
     def get_screen(id: int) -> ScreenClass:
         screen_query = Scr.objects.filter(check=True, id=id)
-       # print(screen_query[0].nameb, screen_query[0].dir)
-        screen = ScreenClass(screen_query[0].name, screen_query[0].nameb, screen_query[0].dir, str(screen_query[0].ip_add))
+        # print(screen_query[0].nameb, screen_query[0].dir)
+        screen = ScreenClass(screen_query[0].name, screen_query[0].nameb, screen_query[0].dir,
+                             str(screen_query[0].ip_add))
         return screen
