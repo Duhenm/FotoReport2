@@ -1,6 +1,6 @@
 import os, cv2, xlrd, datetime
 import shutil
-import time
+
 
 import paramiko as paramiko
 
@@ -66,10 +66,10 @@ class password():
     __user: str
     __password: str
     def __init__(self):
-        file_password = open('c:/password.txt', 'r')
-        self.__user = file_password.readline().replace("\n", "")
-        self.__password = file_password.readline()
-        file_password.close()
+        with open ('c:/password.txt', 'r') as file_password:
+            self.__user = file_password.readline().replace("\n", "")
+            self.__password = file_password.readline()
+
 
     def get_password(self):
         return self.__password
@@ -91,7 +91,7 @@ class ConectControlSsh():
         if clip == '':
             CreateScriptScreen.create_script(id)
             client.exec_command('schtasks /end /tn CS')
-            time.sleep(2)
+            datetime.time.sleep(2)
             client.exec_command('taskkill /IM ATV* /f')
             client.exec_command('taskkill /IM javaw.exe /f')
             client.exec_command('taskkill /IM cityscreen-player.exe /f')
@@ -99,10 +99,10 @@ class ConectControlSsh():
         else:
             CreateScriptScreen.create_script(id, clip)
             client.exec_command('schtasks /end /tn '+screen.dir)
-            time.sleep(2)
+            datetime.time.sleep(2)
             client.exec_command('taskkill /IM ATV* /f')
             client.exec_command('schtasks /run /tn '+screen.dir)
-            time.sleep(6)
+            datetime.time.sleep(6)
             client.exec_command('schtasks /end /tn '+screen.dir)
             client.exec_command('taskkill /IM ATV* /f')
 
@@ -177,23 +177,19 @@ class CreateScriptScreen:
         script_list = repository.get_to_report(data, screen_number)
         for script in script_list:
             if len(script.clips) >= 1:
-                try:
-                    file_start_up_script = open('//' + str(script.screen.ip_add) + '/'
-                                                + script.screen.dir + '/StartUpScript.txt', 'w')
-                except:
-                    list_result.append(str(script.screen) + "   Экран не доступен")
-                else:
-                    file_start_up_script.write('telnet -up' + '\n')
-                    file_start_up_script.write('__dev -up' + '\n')
-                    if clip == '':
-                        for clips_item in script.clips:
-                            file_start_up_script.write('play ' + str(clips_item) + '; ')
-                        file_start_up_script.write(' exec c:\start_t.cmd')
-                    else:
-                        file_start_up_script.write('play ' + clip + '; ')
-                        file_start_up_script.write(' exit')
-                    file_start_up_script.close()
-                    list_result.append(str(script.screen) + "   Скипт сформирован")
+                with open('//' + str(script.screen.ip_add) + '/'
+                          + script.screen.dir + '/StartUpScript.txt', 'w')as file_start_up_script:
+                        file_start_up_script.write('telnet -up' + '\n')
+                        file_start_up_script.write('__dev -up' + '\n')
+                        if clip == '':
+                            for clips_item in script.clips:
+                                file_start_up_script.write('play ' + str(clips_item) + '; ')
+                            file_start_up_script.write(' exec c:\start_t.cmd')
+                        else:
+                            file_start_up_script.write('play ' + clip + '; ')
+                            file_start_up_script.write(' exit')
+                        list_result.append(str(script.screen) + "   Скипт сформирован")
+
         return list_result
 
 
