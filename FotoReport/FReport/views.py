@@ -1,4 +1,3 @@
-from tkinter.filedialog import askopenfilename
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from .models import *
@@ -8,7 +7,6 @@ from .my_def import *
 from django.shortcuts import render
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-from tkinter import *
 from .forms import FileFieldForm
 from .forms import UploadFileForm
 from django.views.generic.edit import FormView
@@ -57,17 +55,17 @@ def montag(request):
 
 
 
-def openfile2(request):
-    form = Add_report(request.POST)
-    askopenfilename(
-        initialdir='c:',
-        title="Выберете файл с отчетом",
-        filetypes=(
-            ("Excel", "*.xls"),
-            ("All Files", "*.*")
-        )
-    )
-    return render(request, 'FReport/montag.html', {'form': form})
+# def openfile2(request):
+#     form = Add_report(request.POST)
+#     askopenfilename(
+#         initialdir='c:',
+#         title="Выберете файл с отчетом",
+#         filetypes=(
+#             ("Excel", "*.xls"),
+#             ("All Files", "*.*")
+#         )
+#     )
+#     return render(request, 'FReport/montag.html', {'form': form})
 
 def admins_add(request):
     #form = ClipsForm(request.POST)
